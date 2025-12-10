@@ -17,12 +17,14 @@ CORES=$(grep cpuid.coresPerSocket "path_to_vm".vmx | sed -n '1p' | awk '{print $
 SOCKET=$(( NUM_CPU_TOTAL / CORES )) # to get the number of socket we divide the number total of core per number of core for one socket.
 VM_NAME=$(grep displayName "path_to_vm".vmx | awk '{ $1=" "; $2=" "; sub(/^ +/, " ");print}' | tr -d '"'| tr -d ' ')
 
+# Here this line of code will make sure that in case of the SOCKET is set at 0 it reset it to at least 1,
+[ "$SOCKET" -eq 0 ] && SOCKET =1
+
 # This step is entirerly optional and is just here to verify the the config the vm will have to be sure it actually what you want.
-echo "Are you sure you want to importe a Virtual Machine with those configuration : - $RAM MB, - $CORES cores on $SOCKET for a total of $NUM_CPU_TOTAL used on $VM_NAME vm [Y/N] ?"
+echo "You are about to importe a Virtual Machine with those configuration : - $RAM MB, - $CORES cores on $SOCKET for a total of $NUM_CPU_TOTAL used on the vm named $VM_NAME "
 read validation
 
 # In this Part we will create the VM, import the disk and then connect it in Virtio before putting it as the booting disk
-if [ "$validation"="Y" ] then
   echo "Please enter the VM ID you want to use (Attention it has to be unused !)"
   read vm_ID
   qm create "$vm_ID" --memory "$RAM" --cores "$CORES" --sockets "$SOCKET" --bios ovmf --name "$VM_NAME"
@@ -33,13 +35,4 @@ if [ "$validation"="Y" ] then
 # And the import is over !
 echo "Importation is over !"
 
-# If you go for the no instead !
-elif [ "$validation"="N" ]; then
-  exit
-# If you input anything else
-else
-  exit 1
-fi
-
-
-# Made by Apollinaire !
+# Made by Apollinaire 
