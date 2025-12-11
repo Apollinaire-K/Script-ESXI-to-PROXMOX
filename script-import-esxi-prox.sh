@@ -17,8 +17,9 @@ CORES=$(grep cpuid.coresPerSocket "path_to_vm".vmx | sed -n '1p' | awk '{print $
 SOCKET=$(( NUM_CPU_TOTAL / CORES )) # to get the number of socket we divide the number total of core per number of core for one socket.
 VM_NAME=$(grep displayName "path_to_vm".vmx | awk '{ $1=" "; $2=" "; sub(/^ +/, " ");print}' | tr -d '"'| tr -d ' ' | tr -d '*') # Updated to make sure all sign like " " or "*" are removed by the tr
 
-# Here this line of code will make sure that in case of the SOCKET is set at 0 it reset it to at least 1,
-[ "$SOCKET" -eq 0 ] && SOCKET =1
+# Here this line of code will make sure that in case of the SOCKET is set at 0 it reset it to at least 1, same goes for the CORES variable.
+[ "CORES" -eq 0 ] && CORES=2
+[ "$SOCKET" -eq 0 ] && SOCKET=1
 
 # This step is entirerly optional and is just here to verify the the config the vm will have to be sure it actually what you want.
 echo "You are about to importe a Virtual Machine with those configuration : - $RAM MB, - $CORES cores on $SOCKET for a total of $NUM_CPU_TOTAL used on the vm named $VM_NAME "
