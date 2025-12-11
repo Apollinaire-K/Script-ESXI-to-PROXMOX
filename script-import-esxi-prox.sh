@@ -24,7 +24,8 @@ else
 fi
 if grep -q "cpuid.coresPerSocket" "$path_to_vm".vmx; then
 # Here we will have to use "sed -n '1p'" because the grep give us the result of cpuid.coresPerSocket & the one from "cpuid.coresPerSocket.cookie" so we use it to only get the first line.
-  CORES=$(grep cpuid.coresPerSocket "path_to_vm".vmx | sed -n '1p' | awk '{print $3}' | tr -d '"')
+# The "tr -d" part here can be added more time with other character that could stop the script to work, I only put here the case I personally encounterded
+  CORES=$(grep cpuid.coresPerSocket "path_to_vm".vmx | sed -n '1p' | awk '{print $3}' | tr -d '"' | tr -d '_' | tr -d ' ' | tr -d '.' | tr -d '*') 
 else
   CORES=2
 fi
