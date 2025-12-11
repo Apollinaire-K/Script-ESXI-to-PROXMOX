@@ -23,7 +23,7 @@ else
   NUM_CPU_TOTAL=4
 fi
 if grep -q "cpuid.coresPerSocket" "$path_to_vm".vmx; then
-# Here we will have to had "sed -n '1p'" because the grep give us the result of cpuid.coresPerSocket & the one from "cpuid.coresPerSocket.cookie" so we use it to only get the first line.
+# Here we will have to use "sed -n '1p'" because the grep give us the result of cpuid.coresPerSocket & the one from "cpuid.coresPerSocket.cookie" so we use it to only get the first line.
   CORES=$(grep cpuid.coresPerSocket "path_to_vm".vmx | sed -n '1p' | awk '{print $3}' | tr -d '"')
 else
   CORES=2
