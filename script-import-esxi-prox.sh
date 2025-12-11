@@ -17,11 +17,13 @@ if grep -q "memSize" "$path_to_vm".vmx; then
 else
   RAM=12000
 fi
+
 if grep -q "numvcpus" "$path_to_vm".vmx; then
   NUM_CPU_TOTAL=$(grep numvcpus "$path_to_vm".vmx | awk '{print $3}' | tr -d '"')
 else
   NUM_CPU_TOTAL=4
 fi
+
 if grep -q "cpuid.coresPerSocket" "$path_to_vm".vmx; then
 # Here we will have to use "sed -n '1p'" because the grep give us the result of cpuid.coresPerSocket & the one from "cpuid.coresPerSocket.cookie" so we use it to only get the first line.
 # The "tr -d" part here can be added more time with other character that could stop the script to work, I only put here the case I personally encounterded
@@ -30,7 +32,13 @@ else
   CORES=2
 fi
 SOCKET=$(( NUM_CPU_TOTAL / CORES )) # to get the number of socket we divide the number total of core per number of core for one socket.
-VM_NAME=$(grep displayName "path_to_vm".vmx | awk '{ $1=" "; $2=" "; sub(/^ +/, " ");print}' | tr -d '"'| tr -d ' ' | tr -d '*') # Updated to make sure all sign like " " or "*" are removed by the tr
+
+if grep -q "displayName" "$path_to_vm".vmx; then
+  VM_NAME=$(grep displayName "$path_to_vm".vmx | awk '{ $1=" "; $2=" "; sub(/^ +/, " ");print}' | tr -d '"'| tr -d ' ' | tr -d '*') # Updated to make sure all sign like " " or "*" are removed by the tr
+else 
+  echo "Please enter a new VM name (Only Alphanumerical character)"
+  read VM_NAME
+fi
 
 # Here this line of code will make sure that in case of the SOCKET is set at 0 it reset it to at least 1, same goes for the CORES variable.
 [ "$CORES" -eq 0 ] && CORES=2
