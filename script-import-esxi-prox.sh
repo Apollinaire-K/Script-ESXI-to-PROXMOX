@@ -10,10 +10,24 @@ echo "script to import VM from VmWare ESXI to Proxmox by Apollinaire"
 echo "Enter the path to the virtual machine file (path + file name without the extention !)"
 read path_to_vm
 
-# Once we have the path we will just grab the information we need.
-RAM=$(grep memSize "$path_to_vm".vmx | awk '{print $3}' | tr -d '"') # here we difine the viriable RAM as the memSize line from the .vmx file, but as we only need the ram information here we use "awk" to only take the 3rd word before using "tr -d" to delete the " from the memory information.
-NUM_CPU_TOTAL=$(grep numvcpus "$path_to_vm".vmx | awk '{print $3}' | tr -d '"')
-CORES=$(grep cpuid.coresPerSocket "path_to_vm".vmx | sed -n '1p' | awk '{print $3}' | tr -d '"') # Here we will have to had "sed -n '1p'" because the grep give us the result of cpuid.coresPerSocket & the one from "cpuid.coresPerSocket.cookie" so we use it to only get the first line.
+# Once we have the path we will just grab the information we need. The If part that has been added is in the case where there is no infromation about the number of core or total CPU on the vmx file, it will at that moment place a temporary of 2 cores on 2 socket
+if grep -q "memSize" "$path_to_vm".vmx; then
+# here we difine the viriable RAM as the memSize line from the .vmx file, but as we only need the ram information here we use "awk" to only take the 3rd word before using "tr -d" to delete the " from the memory information.
+  RAM=$(grep memSize "$path_to_vm".vmx | awk '{print $3}' | tr -d '"') 
+else
+  RAM=12000
+fi
+if grep -q "numvcpus" "$path_to_vm".vmx; then
+  NUM_CPU_TOTAL=$(grep numvcpus "$path_to_vm".vmx | awk '{print $3}' | tr -d '"')
+else
+  NUM_CPU_TOTAL=4
+fi
+if grep -q "cpuid.coresPerSocket" "$path_to_vm".vmx; then
+# Here we will have to had "sed -n '1p'" because the grep give us the result of cpuid.coresPerSocket & the one from "cpuid.coresPerSocket.cookie" so we use it to only get the first line.
+  CORES=$(grep cpuid.coresPerSocket "path_to_vm".vmx | sed -n '1p' | awk '{print $3}' | tr -d '"')
+else
+  CORES=2
+fi
 SOCKET=$(( NUM_CPU_TOTAL / CORES )) # to get the number of socket we divide the number total of core per number of core for one socket.
 VM_NAME=$(grep displayName "path_to_vm".vmx | awk '{ $1=" "; $2=" "; sub(/^ +/, " ");print}' | tr -d '"'| tr -d ' ' | tr -d '*') # Updated to make sure all sign like " " or "*" are removed by the tr
 
